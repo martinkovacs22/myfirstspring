@@ -14,13 +14,14 @@ RUN git clone -b main https://github.com/martinkovacs22/myfirstspring.git .
 # 3. Átváltás a megfelelő mappába a Maven build futtatásához
 WORKDIR /app/myfirstspring/WebProject
 
-# 4. A Maven build futtatása (JAR fájl készítése)
-RUN mvn clean package
+# A Maven build futtatása a Docker image építésekor
+RUN mvn clean install
 
-# 5. A JAR fájl másolása a konténerbe
-COPY /app/myfirstspring/WebProject/target/web-0.0.1-SNAPSHOT.jar /app/app.jar
+# 4. A JAR fájl másolása a konténerbe
+COPY ./target/web-0.0.1-SNAPSHOT.jar /app/app.jar
 
-# 6. Jenkins elindítása
-# Az alábbi parancs elindítja Jenkins-t a konténer indításakor.
-# Ez azért szükséges, mert a Dockerfile-ban a background-ban való futtatás nem mindig működik jól.
+# 5. Jenkins elindítása
+ENTRYPOINT ["/usr/local/bin/jenkins.sh"]
+
+# 6. Spring Boot alkalmazás elindítása
 CMD ["java", "-jar", "/app/app.jar"]
