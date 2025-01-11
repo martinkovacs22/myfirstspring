@@ -1,27 +1,38 @@
-# 1. Alap image, ami tartalmazza a Jenkins-t és az OpenJDK-t
+# Jenkins és a Spring Boot indítása supervisord-dal
 FROM jenkins/jenkins:lts
 
-# Válts root felhasználóra az apt-get parancsokhoz
 USER root
 
-# Frissítés és az OpenJDK 17, Git, Maven telepítése
-RUN apt-get update && apt-get install -y openjdk-17-jdk git maven && apt-get clean
+# Frissítés, szükséges csomagok telepítése
+RUN apt-get update && apt-get install -y openjdk-17-jdk git maven supervisor && apt-get clean
 
-# 2. A projekt kódjának letöltése GitHub-ról a main branchról
+# A projekt kódjának letöltése
 WORKDIR /app
-RUN git clone -b main https://github.com/martinkovacs22/myfirstspring.git .
+RUN git clone --single-branch -b main https://github.com/martinkovacs22/myfirstspring.git /app/myfirstspring
 
-# 3. Átváltás a megfelelő mappába a Maven build futtatásához
+# A Maven build futtatása
 WORKDIR /app/myfirstspring/WebProject
-
-# A Maven build futtatása a Docker image építésekor
 RUN mvn clean install
 
-# 4. A JAR fájl másolása a konténerbe
+# JAR fájlok másolása
 COPY ./target/web-0.0.1-SNAPSHOT.jar /app/app.jar
 
-# 5. Jenkins elindítása
-ENTRYPOINT ["/usr/local/bin/jenkins.sh"]
+# Supervisor konfiguráció másolása
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# 6. Spring Boot alkalmazás elindítása
-CMD ["java", "-jar", "/app/app.jar"]
+# Két port megnyitása
+EXPOSE 1001
+EXPOSE 8081
+
+# Supervisor elindítása
+CMD ["/usr/bin/supervisord"]
+
+# Add script to image
+COPY init.sh /usr/local/bin/init.sh
+RUN chmod +x /usr/local/bin/init.sh
+
+# Override entrypoint to run init.sh
+ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/init.sh"]
+
+#indito parancs
+#docker run -d -p 1004:8080 -p 1005:8081 --name mycontainer myfirstspring
