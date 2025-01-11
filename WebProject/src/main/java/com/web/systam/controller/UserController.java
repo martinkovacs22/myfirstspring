@@ -23,7 +23,7 @@ public class UserController {
     public String home(@RequestBody UserModel user) {
  
         String jwt = userService.login(user); // A Service használata
-        return "Hello World jwt: " + jwt;
+        return "Hello World: " + jwt;
     }
     
 }
