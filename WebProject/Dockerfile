@@ -17,11 +17,10 @@ WORKDIR /app/myfirstspring/WebProject
 # 4. A Maven build futtatása (JAR fájl készítése)
 RUN mvn clean package
 
-# 5. A JAR fájl másolása a target mappából (a konténerbe)
-COPY WebProject/target/web-0.0.1-SNAPSHOT.jar /app/app.jar
+# 5. A JAR fájl másolása a konténerbe
+COPY /app/myfirstspring/WebProject/target/web-0.0.1-SNAPSHOT.jar /app/app.jar
 
-# 6. Jenkins elindítása háttérben
-RUN nohup /usr/local/bin/jenkins.sh &
-
-# 7. Spring Boot alkalmazás elindítása
+# 6. Jenkins elindítása
+# Az alábbi parancs elindítja Jenkins-t a konténer indításakor.
+# Ez azért szükséges, mert a Dockerfile-ban a background-ban való futtatás nem mindig működik jól.
 CMD ["java", "-jar", "/app/app.jar"]
